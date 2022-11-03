@@ -1,21 +1,17 @@
-import fs from 'fs';
 import path from 'path';
+import glob from 'glob';
 
-export function findBuildGradle(sourceDir: string, isLibrary: boolean) {
-  const buildGradlePath = path.join(
-    sourceDir,
-    isLibrary ? 'build.gradle' : 'app/build.gradle',
-  );
-  const buildGradleKtsPath = path.join(
-    sourceDir,
-    isLibrary ? 'build.gradle.kts' : 'app/build.gradle.kts',
-  );
+export function findBuildGradle(sourceDir: string) {
+  const gradlePath = glob.sync('**/+(build.gradle|build.gradle.kts)', {
+    cwd: sourceDir,
+    ignore: [
+      'node_modules/**',
+      '**/build/**',
+      '**/debug/**',
+      'Examples/**',
+      'examples/**',
+    ],
+  })[0];
 
-  if (fs.existsSync(buildGradlePath)) {
-    return buildGradlePath;
-  } else if (fs.existsSync(buildGradleKtsPath)) {
-    return buildGradleKtsPath;
-  } else {
-    return null;
-  }
+  return gradlePath ? path.join(sourceDir, gradlePath) : null;
 }
